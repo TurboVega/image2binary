@@ -19,7 +19,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["/home/curtis/images/64px"],
+            "args": ["-w", "100", "-h", "100"],
             "cwd": "${workspaceFolder}"
         },
         {

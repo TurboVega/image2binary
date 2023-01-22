@@ -1,0 +1,267 @@
+Image to Binary (file convertor)
+./painting.png, 273x284, Rgb8
+Palette needs 194 custom colors.
+
+; Palette entries by index:
+;             VERA      Dec Hex:  R G B
+;
+begin_palette_table:
+    .byte    $00,$00  ; 000 $00:  0 0 0
+    .byte    $ff,$0f  ; 001 $01:  f f f
+    .byte    $ff,$0f  ; 002 $02:  f f f
+    .byte    $ff,$0f  ; 003 $03:  f f f
+    .byte    $ff,$0f  ; 004 $04:  f f f
+    .byte    $ff,$0f  ; 005 $05:  f f f
+    .byte    $ff,$0f  ; 006 $06:  f f f
+    .byte    $ff,$0f  ; 007 $07:  f f f
+    .byte    $ff,$0f  ; 008 $08:  f f f
+    .byte    $ff,$0f  ; 009 $09:  f f f
+    .byte    $ff,$0f  ; 010 $0a:  f f f
+    .byte    $ff,$0f  ; 011 $0b:  f f f
+    .byte    $ff,$0f  ; 012 $0c:  f f f
+    .byte    $ff,$0f  ; 013 $0d:  f f f
+    .byte    $ff,$0f  ; 014 $0e:  f f f
+    .byte    $ff,$0f  ; 015 $0f:  f f f
+    .byte    $d7,$03  ; 016 $10:  3 d 7
+    .byte    $23,$0e  ; 017 $11:  e 2 3
+    .byte    $b7,$07  ; 018 $12:  7 b 7
+    .byte    $dc,$0a  ; 019 $13:  a d c
+    .byte    $b1,$02  ; 020 $14:  2 b 1
+    .byte    $ca,$0b  ; 021 $15:  b c a
+    .byte    $6e,$07  ; 022 $16:  7 6 e
+    .byte    $6e,$06  ; 023 $17:  6 6 e
+    .byte    $e9,$09  ; 024 $18:  9 e 9
+    .byte    $ab,$05  ; 025 $19:  5 a b
+    .byte    $22,$0b  ; 026 $1a:  b 2 2
+    .byte    $86,$05  ; 027 $1b:  5 8 6
+    .byte    $bb,$0f  ; 028 $1c:  f b b
+    .byte    $00,$01  ; 029 $1d:  1 0 0
+    .byte    $c2,$07  ; 030 $1e:  7 c 2
+    .byte    $2e,$03  ; 031 $1f:  3 2 e
+    .byte    $ee,$0e  ; 032 $20:  e e e
+    .byte    $99,$0e  ; 033 $21:  e 9 9
+    .byte    $77,$07  ; 034 $22:  7 7 7
+    .byte    $c9,$0b  ; 035 $23:  b c 9
+    .byte    $92,$0a  ; 036 $24:  a 9 2
+    .byte    $aa,$0d  ; 037 $25:  d a a
+    .byte    $c9,$06  ; 038 $26:  6 c 9
+    .byte    $50,$00  ; 039 $27:  0 5 0
+    .byte    $55,$0e  ; 040 $28:  e 5 5
+    .byte    $da,$0a  ; 041 $29:  a d a
+    .byte    $50,$05  ; 042 $2a:  5 5 0
+    .byte    $ba,$0a  ; 043 $2b:  a b a
+    .byte    $b2,$08  ; 044 $2c:  8 b 2
+    .byte    $ff,$0f  ; 045 $2d:  f f f
+    .byte    $55,$09  ; 046 $2e:  9 5 5
+    .byte    $dd,$0f  ; 047 $2f:  f d d
+    .byte    $88,$0d  ; 048 $30:  d 8 8
+    .byte    $ca,$0e  ; 049 $31:  e c a
+    .byte    $63,$0d  ; 050 $32:  d 6 3
+    .byte    $51,$03  ; 051 $33:  3 5 1
+    .byte    $00,$06  ; 052 $34:  6 0 0
+    .byte    $6d,$04  ; 053 $35:  4 6 d
+    .byte    $d3,$07  ; 054 $36:  7 d 3
+    .byte    $11,$0a  ; 055 $37:  a 1 1
+    .byte    $91,$02  ; 056 $38:  2 9 1
+    .byte    $e9,$0a  ; 057 $39:  a e 9
+    .byte    $ed,$0e  ; 058 $3a:  e e d
+    .byte    $11,$09  ; 059 $3b:  9 1 1
+    .byte    $fc,$0c  ; 060 $3c:  c f c
+    .byte    $3e,$04  ; 061 $3d:  4 3 e
+    .byte    $eb,$0b  ; 062 $3e:  b e b
+    .byte    $00,$02  ; 063 $3f:  2 0 0
+    .byte    $7d,$05  ; 064 $40:  5 7 d
+    .byte    $ad,$08  ; 065 $41:  8 a d
+    .byte    $66,$06  ; 066 $42:  6 6 6
+    .byte    $d4,$07  ; 067 $43:  7 d 4
+    .byte    $44,$04  ; 068 $44:  4 4 4
+    .byte    $43,$0e  ; 069 $45:  e 4 3
+    .byte    $ee,$0d  ; 070 $46:  d e e
+    .byte    $c9,$05  ; 071 $47:  5 c 9
+    .byte    $c1,$03  ; 072 $48:  3 c 1
+    .byte    $ea,$0a  ; 073 $49:  a e a
+    .byte    $ac,$0a  ; 074 $4a:  a a c
+    .byte    $cc,$0f  ; 075 $4b:  f c c
+    .byte    $d3,$04  ; 076 $4c:  4 d 3
+    .byte    $99,$09  ; 077 $4d:  9 9 9
+    .byte    $c7,$0b  ; 078 $4e:  b c 7
+    .byte    $51,$06  ; 079 $4f:  6 5 1
+    .byte    $ae,$0a  ; 080 $50:  a a e
+    .byte    $44,$0e  ; 081 $51:  e 4 4
+    .byte    $98,$0d  ; 082 $52:  d 9 8
+    .byte    $00,$03  ; 083 $53:  3 0 0
+    .byte    $88,$08  ; 084 $54:  8 8 8
+    .byte    $64,$06  ; 085 $55:  6 6 4
+    .byte    $62,$0d  ; 086 $56:  d 6 2
+    .byte    $01,$07  ; 087 $57:  7 0 1
+    .byte    $11,$08  ; 088 $58:  8 1 1
+    .byte    $4e,$05  ; 089 $59:  5 4 e
+    .byte    $33,$0e  ; 090 $5a:  e 3 3
+    .byte    $d7,$0a  ; 091 $5b:  a d 7
+    .byte    $75,$05  ; 092 $5c:  5 7 5
+    .byte    $92,$0b  ; 093 $5d:  b 9 2
+    .byte    $9b,$04  ; 094 $5e:  4 9 b
+    .byte    $dd,$0d  ; 095 $5f:  d d d
+    .byte    $da,$0c  ; 096 $60:  c d a
+    .byte    $22,$02  ; 097 $61:  2 2 2
+    .byte    $bb,$0b  ; 098 $62:  b b b
+    .byte    $dc,$0e  ; 099 $63:  e d c
+    .byte    $a9,$0d  ; 100 $64:  d a 9
+    .byte    $d8,$0a  ; 101 $65:  a d 8
+    .byte    $aa,$0a  ; 102 $66:  a a a
+    .byte    $75,$0d  ; 103 $67:  d 7 5
+    .byte    $77,$0e  ; 104 $68:  e 7 7
+    .byte    $b9,$04  ; 105 $69:  4 b 9
+    .byte    $ce,$0b  ; 106 $6a:  b c e
+    .byte    $9e,$0a  ; 107 $6b:  a 9 e
+    .byte    $b2,$05  ; 108 $6c:  5 b 2
+    .byte    $b2,$07  ; 109 $6d:  7 b 2
+    .byte    $22,$0d  ; 110 $6e:  d 2 2
+    .byte    $ef,$0f  ; 111 $6f:  f e f
+    .byte    $2e,$04  ; 112 $70:  4 2 e
+    .byte    $d7,$05  ; 113 $71:  5 d 7
+    .byte    $00,$04  ; 114 $72:  4 0 0
+    .byte    $50,$02  ; 115 $73:  2 5 0
+    .byte    $8e,$08  ; 116 $74:  8 8 e
+    .byte    $bb,$07  ; 117 $75:  7 b b
+    .byte    $a4,$0b  ; 118 $76:  b a 4
+    .byte    $ec,$0c  ; 119 $77:  c e c
+    .byte    $b6,$0b  ; 120 $78:  b b 6
+    .byte    $b3,$04  ; 121 $79:  4 b 3
+    .byte    $a4,$04  ; 122 $7a:  4 a 4
+    .byte    $d4,$05  ; 123 $7b:  5 d 4
+    .byte    $b3,$09  ; 124 $7c:  9 b 3
+    .byte    $61,$0a  ; 125 $7d:  a 6 1
+    .byte    $51,$08  ; 126 $7e:  8 5 1
+    .byte    $be,$0b  ; 127 $7f:  b b e
+    .byte    $dc,$0c  ; 128 $80:  c d c
+    .byte    $87,$09  ; 129 $81:  9 8 7
+    .byte    $66,$0d  ; 130 $82:  d 6 6
+    .byte    $9d,$08  ; 131 $83:  8 9 d
+    .byte    $00,$00  ; 132 $84:  0 0 0
+    .byte    $55,$05  ; 133 $85:  5 5 5
+    .byte    $7e,$08  ; 134 $86:  8 7 e
+    .byte    $8e,$09  ; 135 $87:  9 8 e
+    .byte    $cb,$09  ; 136 $88:  9 c b
+    .byte    $c6,$09  ; 137 $89:  9 c 6
+    .byte    $91,$05  ; 138 $8a:  5 9 1
+    .byte    $de,$0c  ; 139 $8b:  c d e
+    .byte    $cf,$0c  ; 140 $8c:  c c f
+    .byte    $cb,$08  ; 141 $8d:  8 c b
+    .byte    $b6,$06  ; 142 $8e:  6 b 6
+    .byte    $d7,$07  ; 143 $8f:  7 d 7
+    .byte    $c8,$0b  ; 144 $90:  b c 8
+    .byte    $c4,$09  ; 145 $91:  9 c 4
+    .byte    $87,$07  ; 146 $92:  7 8 7
+    .byte    $b9,$03  ; 147 $93:  3 b 9
+    .byte    $62,$02  ; 148 $94:  2 6 2
+    .byte    $ed,$0f  ; 149 $95:  f e d
+    .byte    $a3,$0b  ; 150 $96:  b a 3
+    .byte    $c5,$0a  ; 151 $97:  a c 5
+    .byte    $ee,$0f  ; 152 $98:  f e e
+    .byte    $bb,$0e  ; 153 $99:  e b b
+    .byte    $b2,$09  ; 154 $9a:  9 b 2
+    .byte    $92,$08  ; 155 $9b:  8 9 2
+    .byte    $d6,$07  ; 156 $9c:  7 d 6
+    .byte    $77,$0d  ; 157 $9d:  d 7 7
+    .byte    $8d,$06  ; 158 $9e:  6 8 d
+    .byte    $db,$09  ; 159 $9f:  9 d b
+    .byte    $bd,$0a  ; 160 $a0:  a b d
+    .byte    $66,$0e  ; 161 $a1:  e 6 6
+    .byte    $91,$07  ; 162 $a2:  7 9 1
+    .byte    $ec,$0b  ; 163 $a3:  b e c
+    .byte    $8d,$07  ; 164 $a4:  7 8 d
+    .byte    $88,$0e  ; 165 $a5:  e 8 8
+    .byte    $ba,$0e  ; 166 $a6:  e b a
+    .byte    $44,$0a  ; 167 $a7:  a 4 4
+    .byte    $fe,$0e  ; 168 $a8:  e f e
+    .byte    $d6,$06  ; 169 $a9:  6 d 6
+    .byte    $97,$0d  ; 170 $aa:  d 9 7
+    .byte    $86,$0d  ; 171 $ab:  d 8 6
+    .byte    $7d,$06  ; 172 $ac:  6 7 d
+    .byte    $c5,$06  ; 173 $ad:  6 c 5
+    .byte    $da,$08  ; 174 $ae:  8 d a
+    .byte    $cc,$0c  ; 175 $af:  c c c
+    .byte    $63,$03  ; 176 $b0:  3 6 3
+    .byte    $ed,$0d  ; 177 $b1:  d e d
+    .byte    $91,$09  ; 178 $b2:  9 9 1
+    .byte    $e7,$07  ; 179 $b3:  7 e 7
+    .byte    $d5,$06  ; 180 $b4:  6 d 5
+    .byte    $c8,$09  ; 181 $b5:  9 c 8
+    .byte    $ad,$09  ; 182 $b6:  9 a d
+    .byte    $af,$0a  ; 183 $b7:  a a f
+    .byte    $62,$0b  ; 184 $b8:  b 6 2
+    .byte    $a8,$08  ; 185 $b9:  8 a 8
+    .byte    $b4,$09  ; 186 $ba:  9 b 4
+    .byte    $ab,$04  ; 187 $bb:  4 a b
+    .byte    $e2,$03  ; 188 $bc:  3 e 2
+    .byte    $75,$0a  ; 189 $bd:  a 7 5
+    .byte    $b5,$0b  ; 190 $be:  b b 5
+    .byte    $5e,$05  ; 191 $bf:  5 5 e
+    .byte    $eb,$0c  ; 192 $c0:  c e b
+    .byte    $e6,$07  ; 193 $c1:  7 e 6
+    .byte    $d7,$04  ; 194 $c2:  4 d 7
+    .byte    $5e,$06  ; 195 $c3:  6 5 e
+    .byte    $11,$01  ; 196 $c4:  1 1 1
+    .byte    $cb,$0e  ; 197 $c5:  e c b
+    .byte    $44,$0b  ; 198 $c6:  b 4 4
+    .byte    $fe,$0f  ; 199 $c7:  f f e
+    .byte    $df,$0d  ; 200 $c8:  d d f
+    .byte    $74,$0d  ; 201 $c9:  d 7 4
+    .byte    $22,$0e  ; 202 $ca:  e 2 2
+    .byte    $ef,$0e  ; 203 $cb:  e e f
+    .byte    $9e,$09  ; 204 $cc:  9 9 e
+    .byte    $91,$04  ; 205 $cd:  4 9 1
+    .byte    $aa,$0e  ; 206 $ce:  e a a
+    .byte    $ea,$09  ; 207 $cf:  9 e a
+    .byte    $7e,$07  ; 208 $d0:  7 7 e
+    .byte    $00,$00  ; 209 $d1:  0 0 0 (FREE)
+    .byte    $00,$00  ; 210 $d2:  0 0 0 (FREE)
+    .byte    $00,$00  ; 211 $d3:  0 0 0 (FREE)
+    .byte    $00,$00  ; 212 $d4:  0 0 0 (FREE)
+    .byte    $00,$00  ; 213 $d5:  0 0 0 (FREE)
+    .byte    $00,$00  ; 214 $d6:  0 0 0 (FREE)
+    .byte    $00,$00  ; 215 $d7:  0 0 0 (FREE)
+    .byte    $00,$00  ; 216 $d8:  0 0 0 (FREE)
+    .byte    $00,$00  ; 217 $d9:  0 0 0 (FREE)
+    .byte    $00,$00  ; 218 $da:  0 0 0 (FREE)
+    .byte    $00,$00  ; 219 $db:  0 0 0 (FREE)
+    .byte    $00,$00  ; 220 $dc:  0 0 0 (FREE)
+    .byte    $00,$00  ; 221 $dd:  0 0 0 (FREE)
+    .byte    $00,$00  ; 222 $de:  0 0 0 (FREE)
+    .byte    $00,$00  ; 223 $df:  0 0 0 (FREE)
+    .byte    $00,$00  ; 224 $e0:  0 0 0 (FREE)
+    .byte    $00,$00  ; 225 $e1:  0 0 0 (FREE)
+    .byte    $00,$00  ; 226 $e2:  0 0 0 (FREE)
+    .byte    $00,$00  ; 227 $e3:  0 0 0 (FREE)
+    .byte    $00,$00  ; 228 $e4:  0 0 0 (FREE)
+    .byte    $00,$00  ; 229 $e5:  0 0 0 (FREE)
+    .byte    $00,$00  ; 230 $e6:  0 0 0 (FREE)
+    .byte    $00,$00  ; 231 $e7:  0 0 0 (FREE)
+    .byte    $00,$00  ; 232 $e8:  0 0 0 (FREE)
+    .byte    $00,$00  ; 233 $e9:  0 0 0 (FREE)
+    .byte    $00,$00  ; 234 $ea:  0 0 0 (FREE)
+    .byte    $00,$00  ; 235 $eb:  0 0 0 (FREE)
+    .byte    $00,$00  ; 236 $ec:  0 0 0 (FREE)
+    .byte    $00,$00  ; 237 $ed:  0 0 0 (FREE)
+    .byte    $00,$00  ; 238 $ee:  0 0 0 (FREE)
+    .byte    $00,$00  ; 239 $ef:  0 0 0 (FREE)
+    .byte    $00,$00  ; 240 $f0:  0 0 0 (FREE)
+    .byte    $00,$00  ; 241 $f1:  0 0 0 (FREE)
+    .byte    $00,$00  ; 242 $f2:  0 0 0 (FREE)
+    .byte    $00,$00  ; 243 $f3:  0 0 0 (FREE)
+    .byte    $00,$00  ; 244 $f4:  0 0 0 (FREE)
+    .byte    $00,$00  ; 245 $f5:  0 0 0 (FREE)
+    .byte    $00,$00  ; 246 $f6:  0 0 0 (FREE)
+    .byte    $00,$00  ; 247 $f7:  0 0 0 (FREE)
+    .byte    $00,$00  ; 248 $f8:  0 0 0 (FREE)
+    .byte    $00,$00  ; 249 $f9:  0 0 0 (FREE)
+    .byte    $00,$00  ; 250 $fa:  0 0 0 (FREE)
+    .byte    $00,$00  ; 251 $fb:  0 0 0 (FREE)
+    .byte    $00,$00  ; 252 $fc:  0 0 0 (FREE)
+    .byte    $00,$00  ; 253 $fd:  0 0 0 (FREE)
+    .byte    $00,$00  ; 254 $fe:  0 0 0 (FREE)
+    .byte    $00,$00  ; 255 $ff:  0 0 0 (FREE)
+end_palette_table:
+
+Wrote file (./painting.bin) as 139776 bytes.
