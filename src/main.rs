@@ -1,32 +1,6 @@
-// This program converts PNG file data into binary data for use on the
-// Commander X16. It reads multiple PNG files, combines their needed
-// color palettes, and outputs palette entries as text, plus binary
-// pixel data (palette indexes rather than colors) files.
+// Please see the README file for an overview of this program.
 //
-// The output palette will always be a set of 256 (or less) 12-bit colors,
-// meaning that it represents (up to) 256 colors out of a set of 4096 possible
-// colors. Any trailing unused palette indexes may be used at your discretion.
-//
-// The program can be run in one of 2 ways. If no directory is specified, or if
-// the current directory is specified, the app searches for PNG files in the
-// current directory. If a list of one or more directories is specified, the app
-// searches for files in those directories. In either case, all files are
-// processed together, where the resulting palette is concerned, so that any of
-// the images can be display on the X16, using the resulting palette.
-//
-// This program does not recursively traverse directories. To process subdirectories,
-// run the program multiple times, with different command line arguments.
-//
-// image2binary [./]
-// image2binary dir1 [dir2 ...]
-//
-// The overall processing is as follows:
-// * Obtain a list of all files to process.
-// * Read all files
-// * Determine how many unique 12-bit colors are used in ALL files together.
-// * Organize 256 color palette (index 0 means transparent; indexes 1..255 mean color).
-// * Output palette data as assembler source text.
-// * Output image data as palette indexes.
+// Copyright 2023 by Curtis Whitley
 
 use std::fs;
 use std::io::Write;
