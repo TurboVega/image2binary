@@ -1,6 +1,6 @@
 Image to Binary (file convertor)
-./painting.png, 273x284, Rgba8
-Palette needs 19 custom colors.
+./painting.png, 273x284, Rgb8
+Palette needs 12 custom colors.
 
 ; Palette entries by index:
 ;             VERA      Dec Hex:  R G B
@@ -9,37 +9,37 @@ begin_palette_table:
     .byte    $00,$00  ; 000 $00:  0 0 0
     .byte    $ff,$0f  ; 001 $01:  f f f
     .byte    $00,$08  ; 002 $02:  8 0 0
-    .byte    $ef,$0a  ; 003 $03:  a e f
-    .byte    $c4,$0c  ; 004 $04:  c c 4
-    .byte    $5c,$00  ; 005 $05:  0 5 c
-    .byte    $a0,$00  ; 006 $06:  0 a 0
-    .byte    $7e,$0e  ; 007 $07:  e 7 e
-    .byte    $58,$0d  ; 008 $08:  d 5 8
-    .byte    $04,$06  ; 009 $09:  6 0 4
+    .byte    $fe,$0a  ; 003 $03:  a f e
+    .byte    $4c,$0c  ; 004 $04:  c 4 c
+    .byte    $c5,$00  ; 005 $05:  0 c 5
+    .byte    $0a,$00  ; 006 $06:  0 0 a
+    .byte    $e7,$0e  ; 007 $07:  e e 7
+    .byte    $85,$0d  ; 008 $08:  d 8 5
+    .byte    $40,$06  ; 009 $09:  6 4 0
     .byte    $77,$0f  ; 010 $0a:  f 7 7
     .byte    $33,$03  ; 011 $0b:  3 3 3
     .byte    $77,$07  ; 012 $0c:  7 7 7
-    .byte    $6f,$0a  ; 013 $0d:  a 6 f
-    .byte    $f8,$00  ; 014 $0e:  0 f 8
+    .byte    $f6,$0a  ; 013 $0d:  a f 6
+    .byte    $8f,$00  ; 014 $0e:  0 8 f
     .byte    $bb,$0b  ; 015 $0f:  b b b
-    .byte    $ab,$04  ; 016 $10:  4 a b
-    .byte    $e2,$03  ; 017 $11:  3 e 2
-    .byte    $d7,$03  ; 018 $12:  3 d 7
-    .byte    $22,$02  ; 019 $13:  2 2 2
-    .byte    $b2,$09  ; 020 $14:  9 b 2
-    .byte    $6d,$04  ; 021 $15:  4 6 d
-    .byte    $9b,$04  ; 022 $16:  4 9 b
-    .byte    $2e,$04  ; 023 $17:  4 2 e
-    .byte    $b3,$09  ; 024 $18:  9 b 3
-    .byte    $44,$04  ; 025 $19:  4 4 4
-    .byte    $d3,$04  ; 026 $1a:  4 d 3
-    .byte    $b9,$03  ; 027 $1b:  3 b 9
-    .byte    $11,$01  ; 028 $1c:  1 1 1
-    .byte    $c2,$07  ; 029 $1d:  7 c 2
-    .byte    $2e,$03  ; 030 $1e:  3 2 e
-    .byte    $22,$0e  ; 031 $1f:  e 2 2
-    .byte    $b4,$09  ; 032 $20:  9 b 4
-    .byte    $00,$00  ; 033 $21:  0 0 0
+    .byte    $b4,$09  ; 016 $10:  9 b 4
+    .byte    $c2,$07  ; 017 $11:  7 c 2
+    .byte    $22,$0e  ; 018 $12:  e 2 2
+    .byte    $92,$0b  ; 019 $13:  b 9 2
+    .byte    $2e,$03  ; 020 $14:  3 2 e
+    .byte    $e2,$03  ; 021 $15:  3 e 2
+    .byte    $62,$0d  ; 022 $16:  d 6 2
+    .byte    $b3,$09  ; 023 $17:  9 b 3
+    .byte    $b2,$09  ; 024 $18:  9 b 2
+    .byte    $63,$0d  ; 025 $19:  d 6 3
+    .byte    $a3,$0b  ; 026 $1a:  b a 3
+    .byte    $00,$00  ; 027 $1b:  0 0 0 (FREE)
+    .byte    $00,$00  ; 028 $1c:  0 0 0 (FREE)
+    .byte    $00,$00  ; 029 $1d:  0 0 0 (FREE)
+    .byte    $00,$00  ; 030 $1e:  0 0 0 (FREE)
+    .byte    $00,$00  ; 031 $1f:  0 0 0 (FREE)
+    .byte    $00,$00  ; 032 $20:  0 0 0 (FREE)
+    .byte    $00,$00  ; 033 $21:  0 0 0 (FREE)
     .byte    $00,$00  ; 034 $22:  0 0 0 (FREE)
     .byte    $00,$00  ; 035 $23:  0 0 0 (FREE)
     .byte    $00,$00  ; 036 $24:  0 0 0 (FREE)
@@ -265,4 +265,4 @@ begin_palette_table:
 end_palette_table:
 
 Wrote file (./PAINTING.BIN) as 76800 bytes.
-Wrote file (PALETTE.BIN) as 512 bytes.
+Wrote file (PALETTE.BIN) as 514 bytes.

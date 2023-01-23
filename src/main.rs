@@ -8,6 +8,11 @@ use std::env;
 use std::collections::HashMap;
 use image::{Rgb};
 
+const IMG_R: usize = 0;
+const IMG_G: usize = 1;
+const IMG_B: usize = 2;
+const IMG_A: usize = 3;
+
 struct Parameters {
     pub width: usize,
     pub height: usize,
@@ -15,7 +20,7 @@ struct Parameters {
 }
 
 fn main() {
-    println!("Image to Binary (file convertor)");
+    println!("Image to Binary (PNG file convertor) V1.0");
 
     // Determine which directories to use.
     let mut directories: Vec<Parameters> = vec![];
@@ -146,9 +151,9 @@ fn main() {
                 for y in 0..height {
                     for x in 0..width {
                         let pixel = rgba.get_pixel(x, y);
-                        let r = pixel[0] >> 4;
-                        let g = pixel[1] >> 4;
-                        let b = pixel[2] >> 4;
+                        let r = pixel[IMG_R] >> 4;
+                        let g = pixel[IMG_G] >> 4;
+                        let b = pixel[IMG_B] >> 4;
                         let color = Rgb::<u8>([r, g, b]);
                         if !palette_map.contains_key(&color) {
                             palette_map.insert(color, 0);
@@ -160,11 +165,11 @@ fn main() {
                 for y in 0..height {
                     for x in 0..width {
                         let pixel = rgba.get_pixel(x, y);
-                        let a = pixel[3] >> 4;
+                        let a = pixel[IMG_A] >> 4;
                         if a > 0 {
-                            let r = pixel[0] >> 4;
-                            let g = pixel[1] >> 4;
-                            let b = pixel[2] >> 4;
+                            let r = pixel[IMG_R] >> 4;
+                            let g = pixel[IMG_G] >> 4;
+                            let b = pixel[IMG_B] >> 4;
                             let color = Rgb::<u8>([r, g, b]);
                             if !palette_map.contains_key(&color) {
                                 palette_map.insert(color, 0);
@@ -189,21 +194,21 @@ fn main() {
         let black = Rgb::<u8>([0, 0, 0]);      // 0
         palette_array.push(black.clone());
 
-        // Also throw in a standard set of 15 colors.
+        // Also throw in a standard set of 15 colors (RGB).
         palette_array.push(Rgb::<u8>([15, 15, 15]));    // 1
         palette_array.push(Rgb::<u8>([8, 0, 0]));       // 2
-        palette_array.push(Rgb::<u8>([10, 14, 15]));    // 3
-        palette_array.push(Rgb::<u8>([12, 12, 4]));     // 4
-        palette_array.push(Rgb::<u8>([0, 5, 12]));      // 5
-        palette_array.push(Rgb::<u8>([0, 10, 0]));      // 6
-        palette_array.push(Rgb::<u8>([14, 7, 14]));     // 7
-        palette_array.push(Rgb::<u8>([13, 5, 8]));      // 8
-        palette_array.push(Rgb::<u8>([6, 0, 4]));       // 9
+        palette_array.push(Rgb::<u8>([10, 15, 14]));    // 3
+        palette_array.push(Rgb::<u8>([12, 4, 12]));     // 4
+        palette_array.push(Rgb::<u8>([0, 12, 5]));      // 5
+        palette_array.push(Rgb::<u8>([0, 0, 10]));      // 6
+        palette_array.push(Rgb::<u8>([14, 14, 7]));     // 7
+        palette_array.push(Rgb::<u8>([13, 8, 5]));      // 8
+        palette_array.push(Rgb::<u8>([6, 4, 0]));       // 9
         palette_array.push(Rgb::<u8>([15, 7, 7]));      // 10
         palette_array.push(Rgb::<u8>([3, 3, 3]));       // 11
         palette_array.push(Rgb::<u8>([7, 7, 7]));       // 12
-        palette_array.push(Rgb::<u8>([10, 6, 15]));     // 13
-        palette_array.push(Rgb::<u8>([0, 15, 8]));      // 14
+        palette_array.push(Rgb::<u8>([10, 15, 6]));     // 13
+        palette_array.push(Rgb::<u8>([0, 8, 15]));      // 14
         palette_array.push(Rgb::<u8>([11, 11, 11]));    // 15
 
         // Assign an index to every custom color in the palette.
@@ -283,9 +288,9 @@ fn main() {
                                     output_data.push(0); // transparent
                                 } else {
                                     let pixel = rgba.get_pixel(img_x as u32, img_y as u32);
-                                    let r = pixel[0] >> 4;
-                                    let g = pixel[1] >> 4;
-                                    let b = pixel[2] >> 4;
+                                    let r = pixel[IMG_R] >> 4;
+                                    let g = pixel[IMG_G] >> 4;
+                                    let b = pixel[IMG_B] >> 4;
                                     let color = Rgb::<u8>([r, g, b]);
                                     let index = palette_map.get(&color).unwrap();
                                     output_data.push(*index);
@@ -335,11 +340,11 @@ fn main() {
                                     output_data.push(0); // transparent
                                 } else {
                                     let pixel = rgba.get_pixel(img_x as u32, img_y as u32);
-                                    let a = pixel[3] >> 4;
+                                    let a = pixel[IMG_A] >> 4;
                                     if a > 0 {
-                                        let r = pixel[0] >> 4;
-                                        let g = pixel[1] >> 4;
-                                        let b = pixel[2] >> 4;
+                                        let r = pixel[IMG_R] >> 4;
+                                        let g = pixel[IMG_G] >> 4;
+                                        let b = pixel[IMG_B] >> 4;
                                         let color = Rgb::<u8>([r, g, b]);
                                         let index = palette_map.get(&color).unwrap();
                                         output_data.push(*index);
@@ -384,11 +389,17 @@ fn main() {
 
         // Write the palette data to a file.
         let mut palette_bytes: Vec<u8> = vec![];
+        // 2-byte address offset
+        palette_bytes.push(0);
+        palette_bytes.push(0);
+        // standard and custom colors
         for index in 0..palette_array.len() {
             let color = palette_array[index];
+            // Output: [ggggbbbb] [----rrrr]
             palette_bytes.push((color[1]<<4)|color[2]); // G B
             palette_bytes.push(color[0]); // R
         }
+        // unused (free) colors
         for _index in palette_array.len()..256 {
             palette_bytes.push(0);
             palette_bytes.push(0);
