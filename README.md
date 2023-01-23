@@ -28,10 +28,33 @@ run the program multiple times, with different command line arguments.
 ```
 image2binary [-w width] [-h height] [./]
 image2binary [-w width] [-h height] dir1 [ { [-w width] [-h height] [dir2 | ./] } ...]
+```
 
-Examples:
+As an example, the "painting.png" file in the "samples"" directory of this project was
+processed using "-w 320 -h 240" as the command parameters (note the spaces), to yield the BIN file in that same directory. Here is the entire command line:
 
 ```
+./image2binary -w 320 -h 240 >painting.log
+```
+
+The image can be displayed using the following steps:
+
+* Change to the "samples" directory.
+* Run the X16 emulator. You may need to specify the path, unless it is reachable.
+* After BASIC loads to its initial screen, enter these commands:
+
+```
+SCREEN $80<br>
+VLOAD "PALETTE.BIN",8,1,$FA00<br>
+VLOAD "PAINTING.BIN",8,0,0
+```
+
+Please note that the background color will be black, because we are using layer 0,
+and there is nothing behind it to provide a background. The binary
+file does have transparency, via color index #0.
+
+There are also other example conversions of the same file, in sub-directories off of
+the "samples" directory.
 
 On a <i>per-directory</i> basis, you may choose to specify the output width and/or height, in pixels.
 If neither width nor height is specified, then the width and height are taken from

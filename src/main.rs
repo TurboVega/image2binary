@@ -186,16 +186,27 @@ fn main() {
 
         // The color at index 0 is always considered transparent by VERA.
         // We throw in a useless black color at that palette index.
-        let black = Rgb::<u8>([0, 0, 0]);
+        let black = Rgb::<u8>([0, 0, 0]);      // 0
         palette_array.push(black.clone());
 
         // Also throw in a standard set of 15 colors.
-        for _c in 1..16 {
-            let white = Rgb::<u8>([15, 15, 15]);
-            palette_array.push(white);
-        }
+        palette_array.push(Rgb::<u8>([15, 15, 15]));    // 1
+        palette_array.push(Rgb::<u8>([8, 0, 0]));       // 2
+        palette_array.push(Rgb::<u8>([10, 14, 15]));    // 3
+        palette_array.push(Rgb::<u8>([12, 12, 4]));     // 4
+        palette_array.push(Rgb::<u8>([0, 5, 12]));      // 5
+        palette_array.push(Rgb::<u8>([0, 10, 0]));      // 6
+        palette_array.push(Rgb::<u8>([14, 7, 14]));     // 7
+        palette_array.push(Rgb::<u8>([13, 5, 8]));      // 8
+        palette_array.push(Rgb::<u8>([6, 0, 4]));       // 9
+        palette_array.push(Rgb::<u8>([15, 7, 7]));      // 10
+        palette_array.push(Rgb::<u8>([3, 3, 3]));       // 11
+        palette_array.push(Rgb::<u8>([7, 7, 7]));       // 12
+        palette_array.push(Rgb::<u8>([10, 6, 15]));     // 13
+        palette_array.push(Rgb::<u8>([0, 15, 8]));      // 14
+        palette_array.push(Rgb::<u8>([11, 11, 11]));    // 15
 
-        // Assign an index to every color in the palette.
+        // Assign an index to every custom color in the palette.
         for color in palette_map.keys() {
             palette_array.push(*color);
         }
@@ -214,16 +225,16 @@ fn main() {
         for index in 0..palette_array.len() {
             let color = palette_array[index];
             println!("    .byte    ${:x}{:x},$0{:x}  ; {:03} ${:02x}:  {:x} {:x} {:x}",
-                color[1], color[2], color[0],
+                color[1], color[2], color[0], // G B R
                 index, index,
-                color[0], color[1], color[2]);
+                color[0], color[1], color[2]); // R G B
         }
         for index in palette_array.len()..256 {
             let color = black.clone();
             println!("    .byte    ${:x}{:x},$0{:x}  ; {:03} ${:02x}:  {:x} {:x} {:x} (FREE)",
-                color[1], color[2], color[0],
+                color[1], color[2], color[0], // G B R
                 index, index,
-                color[0], color[1], color[2]);
+                color[0], color[1], color[2]); // R G B
         }
         println!("end_palette_table:\n");
 
@@ -291,19 +302,20 @@ fn main() {
                         output_path.push_str(".");
                     }
                     output_path.push_str("bin");
-                    match fs::File::create(output_path.clone()) {
+                    let uc_path = output_path.to_ascii_uppercase();
+                    match fs::File::create(uc_path.clone()) {
                         Ok(mut file) => {
                             match file.write_all(&output_data[..]) {
                                 Ok(()) => {
-                                    println!("Wrote file ({}) as {} bytes.", output_path, output_data.len());
+                                    println!("Wrote file ({}) as {} bytes.", uc_path, output_data.len());
                                 },
                                 Err(err) => {
-                                    println!("Cannot write output file ({}): {}", output_path, err.to_string());
+                                    println!("Cannot write output file ({}): {}", uc_path, err.to_string());
                                 }
                             }
                         },
                         Err(err) => {
-                            println!("Cannot open output file ({}): {}", output_path, err.to_string());
+                            println!("Cannot open output file ({}): {}", uc_path, err.to_string());
                         }
                     }
                 },
@@ -347,25 +359,55 @@ fn main() {
                         output_path.push_str(".");
                     }
                     output_path.push_str("bin");
-                    match fs::File::create(output_path.clone()) {
+                    let uc_path = output_path.to_ascii_uppercase();
+                    match fs::File::create(uc_path.clone()) {
                         Ok(mut file) => {
                             match file.write_all(&output_data[..]) {
                                 Ok(()) => {
-                                    println!("Wrote file ({}) as {} bytes.", output_path, output_data.len());
+                                    println!("Wrote file ({}) as {} bytes.", uc_path, output_data.len());
                                 },
                                 Err(err) => {
-                                    println!("Cannot write output file ({}): {}", output_path, err.to_string());
+                                    println!("Cannot write output file ({}): {}", uc_path, err.to_string());
                                 }
                             }
                         },
                         Err(err) => {
-                            println!("Cannot open output file ({}): {}", output_path, err.to_string());
+                            println!("Cannot open output file ({}): {}", uc_path, err.to_string());
                         }
                     }
                 },
                 _ => {
                     panic!("Unhandled image format. Must be RGBA8!");
                 }
+            }
+        }
+
+        // Write the palette data to a file.
+        let mut palette_bytes: Vec<u8> = vec![];
+        for index in 0..palette_array.len() {
+            let color = palette_array[index];
+            palette_bytes.push((color[1]<<4)|color[2]); // G B
+            palette_bytes.push(color[0]); // R
+        }
+        for _index in palette_array.len()..256 {
+            palette_bytes.push(0);
+            palette_bytes.push(0);
+        }
+
+        let uc_path = "PALETTE.BIN".to_string();
+        match fs::File::create(uc_path.clone()) {
+            Ok(mut file) => {
+                match file.write_all(&palette_bytes[..]) {
+                    Ok(()) => {
+                        println!("Wrote file ({}) as {} bytes.", uc_path, palette_bytes.len());
+                    },
+                    Err(err) => {
+                        println!("Cannot write palette file ({}): {}", uc_path, err.to_string());
+                    }
+                }
+            },
+            Err(err) => {
+                println!("Cannot open palette file ({}): {}", uc_path, err.to_string());
             }
         }
     } else {

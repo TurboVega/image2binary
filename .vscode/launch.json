@@ -19,7 +19,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["-w", "100", "-h", "100"],
+            "args": ["-w", "320", "-h", "240","/home/curtis/x16/image2binary/samples"],
             "cwd": "${workspaceFolder}"
         },
         {
