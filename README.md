@@ -3,7 +3,7 @@ Converts PNG files to binary data for X16 VERA usage.
 
 This program converts PNG file data into binary data for use on the
 Commander X16. It reads multiple PNG files, combines their needed
-color palettes, and outputs palette entries in both text and binary, plus it outputs binary pixel data (palette indexes rather than colors)s.
+color palettes, and outputs palette entries in both text and binary, plus it outputs binary pixel data (palette indexes rather than colors).
 
 NOTE: It assumes using 8 bits-per-pixel in the <i>output</i> for VERA; however, the input PNG files may contain 24-bit RGB or 32-bit RGBA data.
 
