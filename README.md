@@ -72,9 +72,9 @@ will result in the original, small image being centered in a 640x480 space.
 
 NOTE: This program does <b>not</b> resize an image by stretching or shrinking it, and it does <b>not</b> attempt to optimize the palette. The only color
 conversion that is does is to take 24-bit RGB data, and right-shift each of
-the color components by 2 (i.e., divide by 4), to yield 12-bit color.
+the color components by 4 (i.e., divide by 16), to yield 12-bit color from the input 24-bit color.
 This implies that detail may be lost, if the original image had non-zero
-values in the least significant 2 bits of any color component of any pixel.
+values in the least significant 4 bits of any color component of any pixel.
 
 The overall processing is as follows:
 * Obtain a list of all files to process.
