@@ -20,7 +20,7 @@ struct Parameters {
 }
 
 fn main() {
-    println!("Image to Binary (PNG file convertor) V1.0");
+    println!("Image to Binary (PNG file convertor) V1.1");
 
     // Determine which directories to use.
     let mut directories: Vec<Parameters> = vec![];
@@ -100,7 +100,14 @@ fn main() {
     let mut files: Vec<Parameters> = vec![];
 
     for directory in &directories {
-        let paths = fs::read_dir(&directory.path).unwrap();
+        println!("Reading: {}", directory.path);
+        let paths = match fs::read_dir(&directory.path) {
+            Ok(path) => path,
+            Err(_) => {
+                println!("Cannot read the specified directory.");
+                continue;
+            }
+        };
         for path in paths {
             match path {
                 Ok(dir_entry) => {
@@ -300,14 +307,7 @@ fn main() {
                     }
 
                     // Write the output data to a file.
-                    let parts = img_file.path.split(".").collect::<Vec<&str>>();
-                    let mut output_path = String::new();
-                    for i in 0..parts.len()-1 {
-                        output_path.push_str(parts[i]);
-                        output_path.push_str(".");
-                    }
-                    output_path.push_str("bin");
-                    let uc_path = output_path.to_ascii_uppercase();
+                    let uc_path = upcase_filename(&img_file.path);
                     match fs::File::create(uc_path.clone()) {
                         Ok(mut file) => {
                             match file.write_all(&output_data[..]) {
@@ -357,14 +357,7 @@ fn main() {
                     }
 
                     // Write the output data to a file.
-                    let parts = img_file.path.split(".").collect::<Vec<&str>>();
-                    let mut output_path = String::new();
-                    for i in 0..parts.len()-1 {
-                        output_path.push_str(parts[i]);
-                        output_path.push_str(".");
-                    }
-                    output_path.push_str("bin");
-                    let uc_path = output_path.to_ascii_uppercase();
+                    let uc_path = upcase_filename(&img_file.path);
                     match fs::File::create(uc_path.clone()) {
                         Ok(mut file) => {
                             match file.write_all(&output_data[..]) {
@@ -424,4 +417,22 @@ fn main() {
     } else {
         println!("Please reduce the number of colors used to 240 or less.");
     }
+}
+
+fn upcase_filename(path: &str) -> String {
+    let parts = path.split("/").collect::<Vec<&str>>();
+    let mut output_path = String::new();
+    for i in 0..parts.len()-1 {
+        output_path.push_str(parts[i]);
+        output_path.push_str("/");
+    }
+
+    let parts2 = parts[parts.len()-1].split(".").collect::<Vec<&str>>();
+    for i in 0..parts2.len()-1 {
+        output_path.push_str(&parts2[i].to_ascii_uppercase());
+        output_path.push_str(".");
+    }
+    output_path.push_str("BIN");
+
+    output_path
 }
