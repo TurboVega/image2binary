@@ -21,8 +21,7 @@ are written to the "PALETTE.BIN" file, and can be loaded into the VERA using the
 command in BASIC.
 
 The output bitmap (set of palette indexes representing colors) can also be loaded
-into VRAM using the VLOAD command. That file does not have any leading data bytes,
-only pixel information.
+into VRAM using the VLOAD command. That file <i>does</i> have the leading dummy address bytes (2 zero bytes).
 
 The program can be run in one of 2 ways. If no directory is specified, or if
 the current directory is specified, the app searches for PNG files in the

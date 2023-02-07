@@ -20,7 +20,7 @@ struct Parameters {
 }
 
 fn main() {
-    println!("Image to Binary (PNG file convertor) V1.1");
+    println!("Image to Binary (PNG file convertor) V1.2");
 
     // Determine which directories to use.
     let mut directories: Vec<Parameters> = vec![];
@@ -282,6 +282,9 @@ fn main() {
                 image::DynamicImage::ImageRgb8(rgba) => {
                     // Convert pixel colors into indexes.
                     let mut output_data: Vec<u8> = vec![];
+                    output_data.push(0); // dummy address LO
+                    output_data.push(0); // dummy address HI
+
                     for out_y in out_start_y..out_end_y {
                         let img_y = img_center_y - (out_center_y - out_y);
                         if img_y < 0 || img_y >= img_height {
@@ -327,6 +330,9 @@ fn main() {
                 image::DynamicImage::ImageRgba8(rgba) => {
                     // Convert pixel colors into indexes.
                     let mut output_data: Vec<u8> = vec![];
+                    output_data.push(0); // dummy address LO
+                    output_data.push(0); // dummy address HI
+                    
                     for out_y in out_start_y..out_end_y {
                         let img_y = img_center_y - (out_center_y - out_y);
                         if img_y < 0 || img_y >= img_height {
@@ -383,8 +389,8 @@ fn main() {
         // Write the palette data to a file.
         let mut palette_bytes: Vec<u8> = vec![];
         // 2-byte address offset
-        palette_bytes.push(0);
-        palette_bytes.push(0);
+        palette_bytes.push(0); // dummy address LO
+        palette_bytes.push(0); // dummy address HI
         // standard and custom colors
         for index in 0..palette_array.len() {
             let color = palette_array[index];
