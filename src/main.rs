@@ -2,7 +2,7 @@
 //
 // Copyright 2023 by Curtis Whitley
 
-use std::fs;
+use std::{fs, cmp::Ordering};
 use std::io::Write;
 use std::env;
 use std::collections::HashMap;
@@ -12,44 +12,72 @@ const IMG_R: usize = 0;
 const IMG_G: usize = 1;
 const IMG_B: usize = 2;
 const IMG_A: usize = 3;
+const VRAM_LIMIT: usize = 0x1F9C0;
 
-struct Parameters {
+#[derive(Debug, Clone)]
+struct DirParameters {
     pub width: usize,
     pub height: usize,
+    pub alignment: usize,
+    pub vapor: bool,
     pub path: String
 }
 
+#[derive(Debug, Clone)]
+struct FileParameters {
+    pub width: usize,
+    pub height: usize,
+    pub alignment: usize,
+    pub vapor: bool,
+    pub path: String,
+    pub size: usize
+}
+
 fn main() {
-    println!("Image to Binary (PNG file convertor) V1.2");
+    println!("Image to Binary (PNG file convertor) V1.3");
 
     // Determine which directories to use.
-    let mut directories: Vec<Parameters> = vec![];
+    let mut directories: Vec<DirParameters> = vec![];
 
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
         // No command arguments given; use current directory only.
-        directories.push(Parameters { height: 0, width: 0, path: "./".to_string() });
+        directories.push(DirParameters {
+            width: 0,
+            height: 0,
+            alignment: 1,
+            vapor: false,
+            path: "./".to_string() });
     } else {
         // Traverse command arguments.
         let mut width = 0;
         let mut height = 0;
+        let mut alignment: usize = 1;
+        let mut vapor = false;
         let mut expect_width = false;
         let mut expect_height = false;
         let mut expect_file = false;
+        let mut expect_alignment: bool = false;
         for a in 1..args.len() {
-            let arg = args[a].clone();
-            if arg.to_ascii_lowercase().eq("-w") {
-                if expect_width || expect_height {
-                    println!("Missing width/height value");
+            let arg = args[a].clone().to_ascii_lowercase();
+            if arg.eq("-w") | arg.eq("-width") {
+                if expect_width || expect_height || expect_alignment {
+                    println!("Missing width/height/alignment value");
                     return;
                 }
                 expect_width = true;
-            } else if arg.to_ascii_lowercase().eq("-h") {
-                if expect_width || expect_height {
-                    println!("Missing width/height value");
+            } else if arg.eq("-h") || arg.eq("-height") {
+                if expect_width || expect_height || expect_alignment {
+                    println!("Missing width/height/alignment value");
                     return;
                 }
                 expect_height = true;
+            } else if arg.eq("-a") || arg.eq("-alignment") {
+                if expect_width || expect_height || expect_alignment {
+                    println!("Missing width/height/alignment value");
+                    return;
+                }
+                expect_alignment = true;
             } else if expect_width {
                 match arg.parse::<usize>() {
                     Ok(number) => {
@@ -74,18 +102,46 @@ fn main() {
                         return;
                     }
                 }
+            } else if expect_alignment {
+                match arg.as_str() {
+                    "tb" => { alignment = 2048; },
+                    "tilebase" => { alignment = 2048; },
+                    "mb" => { alignment = 512; vapor = true; },
+                    "mapbase" => { alignment = 512; vapor = true; },
+                    "sp" => { alignment = 32; },
+                    "sprite" => { alignment = 32; },
+                    "bm" => { alignment = 2048; },
+                    "bitmap" => { alignment = 2048; },
+                    _ => {
+                        match arg.parse::<usize>() {
+                            Ok(number) => {
+                                alignment = number;
+                            },
+                            Err(err) => {
+                                println!("Invalid alignment: {}", err.to_string());
+                                return;
+                            }
+                        }        
+                    }
+                }
+                expect_alignment = false;
+                expect_file = true;
             } else {
-                directories.push(Parameters { width, height, path: arg });
+                directories.push(DirParameters {
+                    width, height, alignment, vapor, path: arg });
                 width = 0;
                 height = 0;
+                alignment = 1;
+                vapor = false;
                 expect_file = false;
             }
         }        
 
         if expect_file {
-            directories.push(Parameters { width, height, path: "./".to_string() });
-        } else if expect_width || expect_height {
-            println!("Missing width/height parameter");
+            directories.push(DirParameters {
+                width, height, alignment, vapor, path: "./".to_string() });
+        } else if expect_width || expect_height || expect_alignment {
+            println!("Missing width/height/alignment parameter");
             return;
         }
     }
@@ -97,10 +153,59 @@ fn main() {
     }
 
     // Determine the paths to all files to process.
-    let mut files: Vec<Parameters> = vec![];
+    let mut files: Vec<FileParameters> = vec![];
 
     for directory in &directories {
+        // Skip virtual data, as there is no directory or file.
+        if directory.vapor {
+            let params = FileParameters {
+                width: directory.width,
+                height: directory.height,
+                alignment: directory.alignment,
+                vapor: directory.vapor,
+                path: directory.path.clone(),
+                size: directory.width * directory.height * 2,
+            };
+            files.push(params);
+            continue;
+        }
+
         println!("Reading: {}", directory.path);
+
+        // Check for accessing a single file, rather than a directory.
+        if directory.path.to_ascii_lowercase().ends_with(".png") {
+            match fs::metadata(directory.path.clone()) {
+                Ok(metadata) => {
+                    if metadata.is_file() {
+                        let img = image::open(directory.path.clone()).unwrap();
+                        let mut params = FileParameters {
+                            width: match directory.width {
+                                0 => img.width() as usize,
+                                _ => directory.width
+                            },
+                            height: match directory.height {
+                                0 => img.height() as usize,
+                                _ => directory.height
+                            },
+                            alignment: directory.alignment,
+                            vapor: directory.vapor,
+                            path: directory.path.clone(),
+                            size: 0
+                        };
+                        params.size = params.width * params.height;
+                        files.push(params);
+                    } else {
+                        println!("Specified file is not a file.");
+                    }
+                },
+                Err(_) => {
+                    println!("Cannot read the specified file.");
+                }
+            }
+            continue;
+        }
+
+        // We must be accessing a whole directory.
         let paths = match fs::read_dir(&directory.path) {
             Ok(path) => path,
             Err(_) => {
@@ -117,7 +222,7 @@ fn main() {
                                 let pathname = dir_entry.path().as_os_str().to_str().unwrap().to_string();
                                 if pathname.to_ascii_lowercase().ends_with(".png") {
                                     let img = image::open(pathname.clone()).unwrap();
-                                    files.push(Parameters {
+                                    let mut params = FileParameters {
                                         width: match directory.width {
                                             0 => img.width() as usize,
                                             _ => directory.width
@@ -126,8 +231,13 @@ fn main() {
                                             0 => img.height() as usize,
                                             _ => directory.height
                                         },
-                                        path: pathname.clone()
-                                    });
+                                        alignment: directory.alignment,
+                                        vapor: directory.vapor,
+                                        path: pathname.clone(),
+                                        size: 0
+                                    };
+                                    params.size = params.width * params.height;
+                                    files.push(params);
                                 }
                             }
                         },
@@ -148,6 +258,9 @@ fn main() {
     // Read the contents of all files, and consolidate their palettes.
     let mut palette_map: HashMap<Rgb<u8>, u8> = HashMap::new();
     for img_file in &files {
+        if img_file.vapor {
+            continue; // skip it
+        }
         let img = image::open(img_file.path.clone()).unwrap();
         let width = img.width();
         let height = img.height();
@@ -251,7 +364,10 @@ fn main() {
         println!("end_palette_table:\n");
 
         // For each PNG file, convert its pixels to palette indexes, and write to output file.
-        for img_file in files {
+        for img_file in &files {
+            if img_file.vapor {
+                continue; // skip it
+            }
             let img = image::open(img_file.path.clone()).unwrap();
 
             // Get dimensions for input image.
@@ -420,6 +536,8 @@ fn main() {
                 println!("Cannot open palette file ({}): {}", uc_path, err.to_string());
             }
         }
+
+        arrange_files_in_memory(&mut files);
     } else {
         println!("Please reduce the number of colors used to 240 or less.");
     }
@@ -441,4 +559,110 @@ fn upcase_filename(path: &str) -> String {
     output_path.push_str("BIN");
 
     output_path
+}
+
+fn arrange_files_in_memory(files: &mut Vec<FileParameters>) {
+    // Sort the files based on:
+    // - alignment (descending)
+    // - size (descending)
+    // - path (ascending)
+    files.sort_by(|a,b| {
+        if a.alignment > b.alignment {
+            Ordering::Less
+        } else if a.alignment < b.alignment {
+            Ordering::Greater
+        } else if a.size > b.size {
+            Ordering::Less
+        } else if a.size < b.size {
+            Ordering::Greater
+        } else {
+            a.path.partial_cmp(&b.path).unwrap()
+        }
+    });
+
+    // Try to fit the series of files into VRAM based on their
+    // specified (or assumed) alignment values.
+
+    println!("\nVRAM Address Arrangement\n");
+    println!("Waste Start  End    Size  Align Width Height Path/Name");
+    println!("----- ------ ------ ----- ----- ----- ------ ----------------------------------");
+
+    let mut address: usize = 0;
+    loop {
+        if files.len() == 0 {
+            break; // no more files to arrange
+        }
+        let file = files[0].clone();
+
+        // Advance the address, if needed, based on alignment.
+        let next_address = ((address + file.alignment - 1) / file.alignment) * file.alignment;
+        let diff = next_address - address;
+
+        if diff == 0 || files.len() == 1 {
+            // The current file fits perfectly at the next address,
+            // or this is the last file to arrange.
+            println!("{:5} ${:05x} ${:05x} {:5} {:5} {:5} {:5}  {}",
+                diff,
+                next_address,
+                next_address + file.size - 1,
+                file.size,
+                file.alignment,
+                file.width,
+                file.height,
+                file.path);
+
+            files.remove(0);
+            address = next_address + file.size;
+        } else {
+            // Find the file whose size uses the difference the best.
+            let mut waste_diff = diff;
+            let mut best_index: usize = 0;
+            let mut best_diff = diff;
+            let mut best_address: usize = next_address;
+
+            for i in 1..files.len() {
+                let file2 = files[i].clone();
+
+                // Align this potential next file
+                let next_address2 =
+                    ((address + file2.alignment - 1) / file2.alignment) * file2.alignment;
+                let diff2 = next_address2 - address;
+
+                // Realign the file in question
+                let next_address3 = next_address2 + file2.size;
+                let next_address4 =
+                    ((next_address3 + file.alignment - 1) /
+                        file.alignment) * file.alignment;
+                let diff4 = next_address4 - next_address3 + diff2;
+
+                if diff4 < best_diff {
+                    waste_diff = diff2;
+                    best_index = i;
+                    best_diff = diff4;
+                    best_address = next_address2;
+                }
+            }
+
+            // Reorder the files by using the best fit file next
+            let file2 = files[best_index].clone();
+            files.remove(best_index);
+
+            // The current file fits perfectly at the next address,
+            // or this is the last file to arrange.
+            println!("{:5} ${:05x} ${:05x} {:5} {:5} {:5} {:5}  {}",
+                waste_diff,
+                best_address,
+                best_address + file2.size - 1,
+                file2.size,
+                file2.alignment,
+                file2.width,
+                file2.height,
+                file2.path);
+
+            address = best_address + file2.size;
+        }
+    }
+    if address > VRAM_LIMIT {
+        println!("* These files will not fit in VRAM together.");
+    }
 }

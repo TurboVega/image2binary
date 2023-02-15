@@ -3,7 +3,9 @@ Converts PNG files to binary data for X16 VERA usage.
 
 This program converts PNG file data into binary data for use on the
 Commander X16. It reads multiple PNG files, combines their needed
-color palettes, and outputs palette entries in both text and binary, plus it outputs binary pixel data (palette indexes rather than colors).
+color palettes, and outputs palette entries in both text and binary, plus it outputs binary pixel data (palette indexes rather than colors). Additionally,
+the program arranges a VRAM memory map, and outputs that information,
+which may be helpful in loading the binary data into VRAM.
 
 NOTE: It assumes using 8 bits-per-pixel in the <i>output</i> for VERA; however, the input PNG files may contain 24-bit RGB or 32-bit RGBA data.
 
@@ -23,22 +25,66 @@ command in BASIC.
 The output bitmap (set of palette indexes representing colors) can also be loaded
 into VRAM using the VLOAD command. That file <i>does</i> have the leading dummy address bytes (2 zero bytes).
 
-The program can be run in one of 2 ways. If no directory is specified, or if
+The program can be run in one of 3 ways. If no directory is specified, or if
 the current directory is specified, the app searches for PNG files in the
-current directory. If a list of one or more directories is specified, the app
+current directory.
+
+If a list of one or more directories is specified, the app
 searches for files in those directories. In either case, all files are
 processed together, where the resulting palette is concerned, so that any of
 the images can be display on the X16, using the resulting palette.
 
+The third way is that you can specify individual PNG files, instead of or along
+with other directories. This can be quite useful when trying to arrange files
+with different purposes (such as tiles versus sprites) into a VERA memory map.
+
 This program does not recursively traverse directories. To process subdirectories,
 run the program multiple times, with different command line arguments.
 
+The command-line format for this program is as follows:
+
 ```
-image2binary [-w width] [-h height] [./]
-image2binary [-w width] [-h height] dir1 [ { [-w width] [-h height] [dir2 | ./] } ...]
+image2binary [-w width] [-h height] [-a alignment] [./]
+image2binary [-w width] [-h height] [-a alignment] <dir1|png1> [ { [-w width] [-h height] [<dir2|png2> | ./] } ...]
 ```
 
-As an example, the "painting.png" file in the "samples"" directory of this project was
+'-w' and '-width' are synonyms (either one is allowed)<br>
+For a PNG file (in a directory or specific), 'width' is given in pixels.
+For a tile map base (see 'a', below), 'width' is the number of horizontal tiles per row, which
+equals the total number of columns.<br>
+<br>
+'-h' and '-height' are synonyms<br>
+For a PNG file (in a directory or specific), 'height' is given in pixels.
+For a tile map base (see 'a', below), 'height' is the number of vertical tiles per column, which
+equals the total number of rows.<br>
+<br>
+'-a' and '-alignment' are synonyms<br>
+By default, the output binary data from a PNG file is aligned to 1 byte, in the VERA memory map.
+Specifying an alignment value (number) causes the output data to be aligned
+according to the given number. It would be more typical not to specify a
+number, but to use these special values:<br>
+<br>
+* 'tb': alignment is 2048
+* 'tilebase': alignment is 2048
+* 'mb': alignment is 512
+* 'mapbase': alignment is 512
+* 'sp': alignment is 32
+* 'sprite': alignment is 32
+* 'bm': alignment is 2048
+* 'bitmap': alignment is 2048
+<br>
+<br>
+For a tilebase, the path name is treated as a required comment, so it need not contain a valid path, but
+if it has special characters or spaces, it may
+need to be quoted in the command line.
+<br>
+<br>
+'dir1' and 'dir2' are names or paths of directories<br>
+<br>
+'png1' and 'png2' are names or paths of individual PNG files<br>
+<br>
+
+As an example of changing image size, the "painting.png" file in the "samples"" directory of this project was
 processed using "-w 320 -h 240" as the command parameters (note the spaces), to yield the BIN file in that same directory. Here is the entire command line:
 
 ```
@@ -51,7 +97,44 @@ The image can be displayed using the following steps:
 * Run the X16 emulator. You may need to specify the path, unless it is reachable.
 * After BASIC loads to its initial screen, load and run "PAINTING.BAS".
 
-There are also other example conversions of the same file, as shell scripts, in sub-directories off of the "samples" directory. If you run a script,
+Another example illustrates specifying individual files, rather than directories,
+and indicating what memory alignment to use for each file. (It is possible to
+specify alignment when using a directory, but that causes all files in the
+directory to be aligned in the same way.)
+
+The "alignment" sample directory may be processed like this:
+
+```
+.../image2binary \
+ -w 64 -h 32 -a mb alpha-tile-map \
+ -w 64 -h 32 -a mb image-tile-map \
+ -a tb abctiles.png \
+ -a tb brdtiles.png \
+ -a sp seq08.png \
+ -a sp seq16.png \
+ -a sp seq32.png \
+ -a sp seq64.png  >alignment.log
+```
+
+The resulting log file will contain a VRAM memory map, such as the following.
+The program attempts to arrange memory with the least possible amount of waste.
+
+```
+VRAM Address Arrangement
+
+Waste Start  End    Size  Align Width Height Path/Name
+----- ------ ------ ----- ----- ----- ------ ----------------------------------
+    0 $00000 $081ff 33280  2048    16  2080  brdtiles.png
+    0 $08200 $08dff  3072    32    16   192  seq16.png
+  512 $09000 $0ddff 19968  2048    16  1248  abctiles.png
+    0 $0de00 $0edff  4096   512    64    32  alpha-tile-map
+    0 $0ee00 $0fdff  4096   512    64    32  image-tile-map
+    0 $0fe00 $1bdff 49152    32    64   768  seq64.png
+    0 $1be00 $1edff 12288    32    32   384  seq32.png
+    0 $1ee00 $1f0ff   768    32     8    96  seq08.png
+```
+
+There are also other example conversions of the 'painting' file, as shell scripts, in sub-directories off of the "samples" directory. If you run a script,
 it should convert the image file to binary, based on the command line in
 the script. Some of the output sizes generated by these sample scripts are
 physically too large to fit inside the VRAM, but using the output is not
@@ -80,8 +163,10 @@ The overall processing is as follows:
 * Read all files.
 * Determine how many unique 12-bit colors are used in ALL files together.
 * Organize a new color palette (index 0 means transparent; indexes 1..255 mean color).
-* Output palette data as assembler source text.
+* Output palette information as binary data.
+* Output palette information as assembler source text.
 * Output image data as binary palette indexes, one index per pixel.
+* Compute and output VERA memory map as text.
 
 NOTE: Regardless of which portion (some or all) of each input file is copied
 (either in whole or in part) to the output, the <b>entire</b> input image is used to determine the combined palette. The main intent of this program is
