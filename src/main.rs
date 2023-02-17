@@ -4,7 +4,7 @@
 
 use std::{fs, cmp::Ordering};
 use std::io::Write;
-use std::env;
+use std::{env, vec};
 use std::collections::HashMap;
 use image::{Rgb};
 
@@ -12,6 +12,7 @@ const IMG_R: usize = 0;
 const IMG_G: usize = 1;
 const IMG_B: usize = 2;
 const IMG_A: usize = 3;
+const VRAM_PAGE_BOUNDARY: usize = 0x10000;
 const VRAM_LIMIT: usize = 0x1F9C0;
 
 #[derive(Debug, Clone)]
@@ -30,11 +31,12 @@ struct FileParameters {
     pub alignment: usize,
     pub vapor: bool,
     pub path: String,
-    pub size: usize
+    pub size: usize,
+    pub binary: Vec<u8>
 }
 
 fn main() {
-    println!("Image to Binary (PNG file convertor) V1.3");
+    println!("Image to Binary (PNG file convertor) V1.4");
 
     // Determine which directories to use.
     let mut directories: Vec<DirParameters> = vec![];
@@ -165,6 +167,7 @@ fn main() {
                 vapor: directory.vapor,
                 path: directory.path.clone(),
                 size: directory.width * directory.height * 2,
+                binary: vec![]
             };
             files.push(params);
             continue;
@@ -190,7 +193,8 @@ fn main() {
                             alignment: directory.alignment,
                             vapor: directory.vapor,
                             path: directory.path.clone(),
-                            size: 0
+                            size: 0,
+                            binary: vec![]
                         };
                         params.size = params.width * params.height;
                         files.push(params);
@@ -234,7 +238,8 @@ fn main() {
                                         alignment: directory.alignment,
                                         vapor: directory.vapor,
                                         path: pathname.clone(),
-                                        size: 0
+                                        size: 0,
+                                        binary: vec![]
                                     };
                                     params.size = params.width * params.height;
                                     files.push(params);
@@ -364,7 +369,7 @@ fn main() {
         println!("end_palette_table:\n");
 
         // For each PNG file, convert its pixels to palette indexes, and write to output file.
-        for img_file in &files {
+        for img_file in &mut files {
             if img_file.vapor {
                 continue; // skip it
             }
@@ -406,12 +411,14 @@ fn main() {
                         if img_y < 0 || img_y >= img_height {
                             for _out_x in out_start_x..out_end_x {
                                 output_data.push(0); // transparent
+                                img_file.binary.push(0);
                             }
                         } else {
                             for out_x in out_start_x..out_end_x {
                                 let img_x = img_center_x - (out_center_x - out_x);
                                 if img_x < 0 || img_x >= img_width {
                                     output_data.push(0); // transparent
+                                    img_file.binary.push(0);
                                 } else {
                                     let pixel = rgba.get_pixel(img_x as u32, img_y as u32);
                                     let r = pixel[IMG_R] >> 4;
@@ -420,6 +427,7 @@ fn main() {
                                     let color = Rgb::<u8>([r, g, b]);
                                     let index = palette_map.get(&color).unwrap();
                                     output_data.push(*index);
+                                    img_file.binary.push(*index);
                                 }
                             }    
                         }
@@ -454,12 +462,14 @@ fn main() {
                         if img_y < 0 || img_y >= img_height {
                             for _out_x in out_start_x..out_end_x {
                                 output_data.push(0); // transparent
+                                img_file.binary.push(0);
                             }
                         } else {
                             for out_x in out_start_x..out_end_x {
                                 let img_x = img_center_x - (out_center_x - out_x);
                                 if img_x < 0 || img_x >= img_width {
                                     output_data.push(0); // transparent
+                                    img_file.binary.push(0);
                                 } else {
                                     let pixel = rgba.get_pixel(img_x as u32, img_y as u32);
                                     let a = pixel[IMG_A] >> 4;
@@ -470,8 +480,10 @@ fn main() {
                                         let color = Rgb::<u8>([r, g, b]);
                                         let index = palette_map.get(&color).unwrap();
                                         output_data.push(*index);
+                                        img_file.binary.push(*index);
                                     } else {
                                         output_data.push(0); // transparent
+                                        img_file.binary.push(0);
                                     }    
                                 }
                             }    
@@ -561,13 +573,40 @@ fn upcase_filename(path: &str) -> String {
     output_path
 }
 
+fn section_filename(path: &str, section: &str) -> String {
+    let parts = path.split("/").collect::<Vec<&str>>();
+    let mut output_path = String::new();
+    for i in 0..parts.len()-1 {
+        output_path.push_str(parts[i]);
+        output_path.push_str("/");
+    }
+
+    let parts2 = parts[parts.len()-1].split(".").collect::<Vec<&str>>();
+    for i in 0..parts2.len()-1 {
+        if i > 0 {
+            output_path.push_str(".");
+        }
+        output_path.push_str(&parts2[i].to_ascii_uppercase());
+    }
+    output_path.push_str("P");
+    output_path.push_str(section);
+    output_path.push_str(".BIN");
+
+    output_path
+}
+
 fn arrange_files_in_memory(files: &mut Vec<FileParameters>) {
     // Sort the files based on:
+    // - vapor flag (descending)
     // - alignment (descending)
     // - size (descending)
     // - path (ascending)
     files.sort_by(|a,b| {
-        if a.alignment > b.alignment {
+        if a.vapor > b.vapor {
+            Ordering::Less
+        } else if a.vapor < b.vapor {
+            Ordering::Greater
+        } else if a.alignment > b.alignment {
             Ordering::Less
         } else if a.alignment < b.alignment {
             Ordering::Greater
@@ -587,6 +626,7 @@ fn arrange_files_in_memory(files: &mut Vec<FileParameters>) {
     println!("Waste Start  End    Size  Align Width Height Path/Name");
     println!("----- ------ ------ ----- ----- ----- ------ ----------------------------------");
 
+    let mut boundary_crossing = false;
     let mut address: usize = 0;
     loop {
         if files.len() == 0 {
@@ -601,15 +641,20 @@ fn arrange_files_in_memory(files: &mut Vec<FileParameters>) {
         if diff == 0 || files.len() == 1 {
             // The current file fits perfectly at the next address,
             // or this is the last file to arrange.
+            let last_address = next_address + file.size - 1;
             println!("{:5} ${:05x} ${:05x} {:5} {:5} {:5} {:5}  {}",
                 diff,
                 next_address,
-                next_address + file.size - 1,
+                last_address,
                 file.size,
                 file.alignment,
                 file.width,
                 file.height,
                 file.path);
+
+            boundary_crossing |=
+                check_for_vram_page_crossing(next_address,
+                    last_address, &file);
 
             files.remove(0);
             address = next_address + file.size;
@@ -649,20 +694,102 @@ fn arrange_files_in_memory(files: &mut Vec<FileParameters>) {
 
             // The current file fits perfectly at the next address,
             // or this is the last file to arrange.
+            let last_address = best_address + file2.size - 1;
             println!("{:5} ${:05x} ${:05x} {:5} {:5} {:5} {:5}  {}",
                 waste_diff,
                 best_address,
-                best_address + file2.size - 1,
+                last_address,
                 file2.size,
                 file2.alignment,
                 file2.width,
                 file2.height,
                 file2.path);
 
+            boundary_crossing |=
+                check_for_vram_page_crossing(best_address,
+                    last_address, &file);
+
             address = best_address + file2.size;
         }
     }
+    if boundary_crossing {
+        println!("");
+        println!("NOTE: one output image crosses the VRAM page boundary, so there are now");
+        println!("      two extra output files, for loading the data in two sections.");
+    }
     if address > VRAM_LIMIT {
-        println!("* These files will not fit in VRAM together.");
+        println!("");
+        println!("ERROR: These files will not fit in VRAM together.");
+    }
+}
+
+fn check_for_vram_page_crossing(first_address: usize, last_address: usize,
+                                img_file: &FileParameters) -> bool {
+    if first_address < VRAM_PAGE_BOUNDARY && last_address > VRAM_PAGE_BOUNDARY {
+        // Output file data crosses VRAM page boundary.
+        // We need to output 2 extra files to split the data for loading.
+        let bank_0_size = VRAM_PAGE_BOUNDARY - first_address;
+        let bank_1_size = last_address + 1 - VRAM_PAGE_BOUNDARY;
+        let bank_0_first_address = first_address;
+        let bank_0_last_address = VRAM_PAGE_BOUNDARY - 1;
+        let bank_1_first_address = VRAM_PAGE_BOUNDARY;
+        let bank_1_last_address = VRAM_PAGE_BOUNDARY + bank_1_size - 1;
+
+        // Write the 1st part of the data.
+        let mut section_data = img_file.binary[..bank_0_size].to_vec();
+        let mut output_data: Vec<u8> = vec![];
+        output_data.push(0); // dummy address byte
+        output_data.push(0); // dummy address byte
+        output_data.append(&mut section_data);
+        let uc_path = section_filename(&img_file.path, "0");
+        match fs::File::create(uc_path.clone()) {
+            Ok(mut file) => {
+                match file.write_all(&output_data[..]) {
+                    Ok(()) => {
+                        println!("      ${:05x} ${:05x} {:5}                    {}",
+                            bank_0_first_address,
+                            bank_0_last_address,
+                            bank_0_size,
+                            uc_path);
+                    },
+                    Err(err) => {
+                        println!("Cannot write output file ({}): {}", uc_path, err.to_string());
+                    }
+                }
+            },
+            Err(err) => {
+                println!("Cannot open output file ({}): {}", uc_path, err.to_string());
+            }
+        }
+        
+        // Write the 2nd part of the data.
+        let mut section_data = img_file.binary[bank_0_size..].to_vec();
+        let mut output_data: Vec<u8> = vec![];
+        output_data.push(0); // dummy address byte
+        output_data.push(0); // dummy address byte
+        output_data.append(&mut section_data);
+        let uc_path = section_filename(&img_file.path, "1");
+        match fs::File::create(uc_path.clone()) {
+            Ok(mut file) => {
+                match file.write_all(&output_data[..]) {
+                    Ok(()) => {
+                        println!("      ${:05x} ${:05x} {:5}                    {}",
+                            bank_1_first_address,
+                            bank_1_last_address,
+                            bank_1_size,
+                            uc_path);
+                    },
+                    Err(err) => {
+                        println!("Cannot write output file ({}): {}", uc_path, err.to_string());
+                    }
+                }
+            },
+            Err(err) => {
+                println!("Cannot open output file ({}): {}", uc_path, err.to_string());
+            }
+        }
+        true
+    } else {
+        false
     }
 }

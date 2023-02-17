@@ -1,6 +1,14 @@
 # image2binary
 Converts PNG files to binary data for X16 VERA usage.
 
+This document is for version V1.4 of the program.
+
+V1.0 - initial upload<br>
+V1.1 - output file path fix<br>
+V1.2 - include 2 zero bytes in front of binary image data<br>
+V1.3 - support creating VRAM memory map<br>
+V1.4 - output 2 extra files when image crosses VRAM page boundary<br>
+
 This program converts PNG file data into binary data for use on the
 Commander X16. It reads multiple PNG files, combines their needed
 color palettes, and outputs palette entries in both text and binary, plus it outputs binary pixel data (palette indexes rather than colors). Additionally,
@@ -36,9 +44,19 @@ the images can be display on the X16, using the resulting palette.
 
 The third way is that you can specify individual PNG files, instead of or along
 with other directories. This can be quite useful when trying to arrange files
-with different purposes (such as tiles versus sprites) into a VERA memory map.
+with different purposes (such as tiles versus sprites) into a VERA memory map,
+because you can tell the program how to align the memory areas (meaning what
+alignment boundaries to use).
 
-This program does not recursively traverse directories. To process subdirectories,
+It may not be needed, but just for convenience sake,
+if any binary output file would cross the VRAM page boundary, the program outputs
+two extra binary files, so that the data bytes can be loaded in two smaller sections (rather than one large whole),
+one section into the last portion of VRAM page #0,
+and the other section into the first portion of VRAM page #1. The ROM load
+function apparently supports crossing that boundary, so this particular feature may
+not be very useful.
+
+Note: This program does not recursively traverse directories. To process subdirectories,
 run the program multiple times, with different command line arguments.
 
 The command-line format for this program is as follows:
@@ -105,7 +123,7 @@ directory to be aligned in the same way.)
 The "alignment" sample directory may be processed like this:
 
 ```
-.../image2binary \
+../image2binary \
  -w 64 -h 32 -a mb alpha-tile-map \
  -w 64 -h 32 -a mb image-tile-map \
  -a tb abctiles.png \
@@ -124,14 +142,19 @@ VRAM Address Arrangement
 
 Waste Start  End    Size  Align Width Height Path/Name
 ----- ------ ------ ----- ----- ----- ------ ----------------------------------
-    0 $00000 $081ff 33280  2048    16  2080  brdtiles.png
-    0 $08200 $08dff  3072    32    16   192  seq16.png
-  512 $09000 $0ddff 19968  2048    16  1248  abctiles.png
-    0 $0de00 $0edff  4096   512    64    32  alpha-tile-map
-    0 $0ee00 $0fdff  4096   512    64    32  image-tile-map
-    0 $0fe00 $1bdff 49152    32    64   768  seq64.png
-    0 $1be00 $1edff 12288    32    32   384  seq32.png
-    0 $1ee00 $1f0ff   768    32     8    96  seq08.png
+    0 $00000 $00fff  4096   512    64    32  alpha-tile-map
+    0 $01000 $01fff  4096   512    64    32  image-tile-map
+    0 $02000 $0a2ff 33536  2048    16  2096  brdtiles.png
+    0 $0a300 $0aeff  3072    32    16   192  seq16.png
+  256 $0b000 $0feff 20224  2048    16  1264  abctiles.png
+    0 $0ff00 $1beff 49152    32    64   768  seq64.png
+      $0ff00 $0ffff   256                    SEQ64P0.BIN
+      $10000 $1beff 48896                    SEQ64P1.BIN
+    0 $1bf00 $1eeff 12288    32    32   384  seq32.png
+    0 $1ef00 $1f1ff   768    32     8    96  seq08.png
+
+NOTE: one output image crosses the VRAM page boundary, so there are now
+      two extra output files, for loading the data in two sections.
 ```
 
 There are also other example conversions of the 'painting' file, as shell scripts, in sub-directories off of the "samples" directory. If you run a script,
