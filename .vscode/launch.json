@@ -20,14 +20,15 @@
                 }
             },
             "args": [
-                "-w","64","-h","32","-a","mb","alpha-tile-map",
-                "-w","64","-h","32","-a","mb","image-tile-map",
-                "-a","tb","./samples/alignment/abctiles.png",
-                "-a","tb","./samples/alignment/brdtiles.png",
-                "-a","sp","./samples/alignment/seq08.png",
-                "-a","sp","./samples/alignment/seq16.png",
-                "-a","sp","./samples/alignment/seq32.png",
-                "-a","sp","./samples/alignment/seq64.png"
+                //"-w","64","-h","32","-a","mb","alpha-tile-map",
+                //"-w","64","-h","32","-a","mb","image-tile-map",
+                //"-a","tb","./samples/alignment/abctiles.png",
+                //"-a","tb","./samples/alignment/brdtiles.png",
+                //"-a","sp","./samples/alignment/seq08.png",
+                //"-a","sp","./samples/alignment/seq16.png",
+                //"-a","sp","./samples/alignment/seq32.png",
+                //"-a","sp","./samples/alignment/seq64.png"
+                "./samples/painting.png"
             ],
             "cwd": "${workspaceFolder}"
         },

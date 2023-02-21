@@ -1,13 +1,12 @@
-Image to Binary (PNG file convertor) V1.4
-Reading: ./
-./painting.png, 273x284, Rgb8
-Palette needs 12 custom colors.
-
+Image to Binary (PNG-to-VERA file convertor) V1.5
+Reading: painting.png
+painting.png, 273x284, Rgb8
+File painting.png has 11 unique colors (maximum is 239).
 ; Palette entries by index:
 ;             VERA      Dec Hex:  R G B
 ;
 begin_palette_table:
-    .byte    $00,$00  ; 000 $00:  0 0 0
+    .byte    $00,$00  ; 000 $00:  0 0 0 (FREE)
     .byte    $ff,$0f  ; 001 $01:  f f f
     .byte    $00,$08  ; 002 $02:  8 0 0
     .byte    $fe,$0a  ; 003 $03:  a f e
@@ -23,17 +22,17 @@ begin_palette_table:
     .byte    $f6,$0a  ; 013 $0d:  a f 6
     .byte    $8f,$00  ; 014 $0e:  0 8 f
     .byte    $bb,$0b  ; 015 $0f:  b b b
-    .byte    $92,$0b  ; 016 $10:  b 9 2
-    .byte    $22,$0e  ; 017 $11:  e 2 2
-    .byte    $62,$0d  ; 018 $12:  d 6 2
-    .byte    $a3,$0b  ; 019 $13:  b a 3
-    .byte    $c2,$07  ; 020 $14:  7 c 2
-    .byte    $b2,$09  ; 021 $15:  9 b 2
-    .byte    $b4,$09  ; 022 $16:  9 b 4
-    .byte    $2e,$03  ; 023 $17:  3 2 e
-    .byte    $e2,$03  ; 024 $18:  3 e 2
-    .byte    $b3,$09  ; 025 $19:  9 b 3
-    .byte    $63,$0d  ; 026 $1a:  d 6 3
+    .byte    $e2,$03  ; 016 $10:  3 e 2
+    .byte    $b3,$09  ; 017 $11:  9 b 3
+    .byte    $22,$0e  ; 018 $12:  e 2 2
+    .byte    $2e,$03  ; 019 $13:  3 2 e
+    .byte    $a3,$0b  ; 020 $14:  b a 3
+    .byte    $c2,$07  ; 021 $15:  7 c 2
+    .byte    $63,$0d  ; 022 $16:  d 6 3
+    .byte    $62,$0d  ; 023 $17:  d 6 2
+    .byte    $b4,$09  ; 024 $18:  9 b 4
+    .byte    $92,$0b  ; 025 $19:  b 9 2
+    .byte    $b2,$09  ; 026 $1a:  9 b 2
     .byte    $00,$00  ; 027 $1b:  0 0 0 (FREE)
     .byte    $00,$00  ; 028 $1c:  0 0 0 (FREE)
     .byte    $00,$00  ; 029 $1d:  0 0 0 (FREE)
@@ -265,16 +264,16 @@ begin_palette_table:
     .byte    $00,$00  ; 255 $ff:  0 0 0 (FREE)
 end_palette_table:
 
-Wrote file (./PAINTING.BIN) as 76802 bytes.
+Wrote file (PAINTING.BIN) as 76802 bytes.
 Wrote file (PALETTE.BIN) as 514 bytes.
 
 VRAM Address Arrangement
 
 Waste Start  End    Size  Align Width Height Path/Name
 ----- ------ ------ ----- ----- ----- ------ ----------------------------------
-    0 $00000 $12bff 76800     1   320   240  ./painting.png
-      $00000 $0ffff 65536                    ./PAINTINGP0.BIN
-      $10000 $12bff 11264                    ./PAINTINGP1.BIN
+    0 $00000 $12bff 76800     1   320   240  painting.png
+      $00000 $0ffff 65536                    PAINTINGP0.BIN
+      $10000 $12bff 11264                    PAINTINGP1.BIN
 
-NOTE: one output image crosses the VRAM page boundary, so there are now
-      two extra output files, for loading the data in two sections.
+NOTE: one output image crosses the VRAM page boundary, so there are now two
+      extra output files, for loading the data in two sections, if needed.

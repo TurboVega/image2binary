@@ -1,13 +1,14 @@
 # image2binary
 Converts PNG files to binary data for X16 VERA usage.
 
-This document is for version V1.4 of the program.
+This document is for version V1.5 of the program.
 
 V1.0 - initial upload<br>
 V1.1 - output file path fix<br>
 V1.2 - include 2 zero bytes in front of binary image data<br>
 V1.3 - support creating VRAM memory map<br>
 V1.4 - output 2 extra files when image crosses VRAM page boundary<br>
+V1.5 - support 1, 2, 4, and 8 bits per pixel in output, plus specifying palette offsets<br>
 
 This program converts PNG file data into binary data for use on the
 Commander X16. It reads multiple PNG files, combines their needed
@@ -62,8 +63,7 @@ run the program multiple times, with different command line arguments.
 The command-line format for this program is as follows:
 
 ```
-image2binary [-w width] [-h height] [-a alignment] [./]
-image2binary [-w width] [-h height] [-a alignment] <dir1|png1> [ { [-w width] [-h height] [<dir2|png2> | ./] } ...]
+image2binary { [-w width] [-h height] [-b <1|2|4|8>] [-p offset] [-n] [-a alignment] [ <dir2|png2> | ./] } ...
 ```
 
 '-w' and '-width' are synonyms (either one is allowed)<br>
@@ -73,8 +73,42 @@ equals the total number of columns.<br>
 <br>
 '-h' and '-height' are synonyms<br>
 For a PNG file (in a directory or specific), 'height' is given in pixels.
-For a tile map base (see 'a', below), 'height' is the number of vertical tiles per column, which
-equals the total number of rows.<br>
+For a tile map base (see 'a', below), 'height' is the number of vertical tiles per column, which equals the total number of rows.<br>
+<br>
+'b' and '-bpp' are synonyms<br>
+This may be used to specify the number of bits per pixel in the output binary
+file, which provides the intended range of color indexes (1: 2 colors, 2: 4
+colors, 4: 16 colors, 8: 256 colors). The default value is 8, for 256 colors.
+As always, color index #0 means transparent, so the actual number of colors is
+one less than the range might imply.<br>
+<br>
+'-p' and '-paletteoffset' are synonymns<br>
+If the specified number of bits per pixel ('-b' or '-bpp') is less than 8, then
+you may specify which palette offset to use when placing the colors for the
+image into the palette. The 'offset' must be a number from 1 to 15. Note that
+if the number of bits per pixel is 1 (for 2 colors) or 2 (for 4 colors), then
+the remaining palette (14 or 12) colors within the designated 16-color palette section may be used for colors of other images, as needed. If you do not specify
+the palette offset, one will be chosen automatically.<br>
+<br>
+If you use the same palette offset index (i.e., share it)
+for multiple input files, be sure to list
+the files in order of their bits-per-pixel numbers, from lowest to highest. For example,
+if a 2-bpp file and a 4-bpp file share the same palette offset, list the 2-bpp file
+before the 4-bpp file, in the command line.<br>
+<br>
+'-n' and '-nooutput' are synonymns<br>
+When this option is specified, the output file will not exist, meaning that there will
+be no output file for the given input image. This option may be used simply to modify
+the color palette, and is particularly useful when using a single output image that
+may be shown in several different base colors, using different palette offsets. In that
+case, multiple input images should be used, one of which does <i>not</i> use the 'no output'
+option, and all such images should be identical in appearance, except for their colors.
+The expectation is that the number of unique colors,
+and the order in which pixels of corresponding colors are encountered,
+within each file, is the same.<br>
+<br>
+Using 'no output' while also sharing palette offsets (see '-p', above) might result in
+improper colors being displayed, so be careful about choosing palette offsets!<br>
 <br>
 '-a' and '-alignment' are synonyms<br>
 By default, the output binary data from a PNG file is aligned to 1 byte, in the VERA memory map.
@@ -90,7 +124,7 @@ number, but to use these special values:<br>
 * 'sprite': alignment is 32
 * 'bm': alignment is 2048
 * 'bitmap': alignment is 2048
-<br>
+
 <br>
 For a tilebase, the path name is treated as a required comment, so it need not contain a valid path, but
 if it has special characters or spaces, it may
@@ -101,12 +135,11 @@ need to be quoted in the command line.
 <br>
 'png1' and 'png2' are names or paths of individual PNG files<br>
 <br>
-
 As an example of changing image size, the "painting.png" file in the "samples"" directory of this project was
 processed using "-w 320 -h 240" as the command parameters (note the spaces), to yield the BIN file in that same directory. Here is the entire command line:
 
 ```
-./image2binary -w 320 -h 240 >painting.log
+./image2binary -w 320 -h 240 painting.png >painting.log
 ```
 
 The image can be displayed using the following steps:
@@ -128,6 +161,7 @@ The "alignment" sample directory may be processed like this:
  -w 64 -h 32 -a mb image-tile-map \
  -a tb abctiles.png \
  -a tb brdtiles.png \
+ -b 1 -p 15 monochrome.png \
  -a sp seq08.png \
  -a sp seq16.png \
  -a sp seq32.png \
@@ -146,15 +180,32 @@ Waste Start  End    Size  Align Width Height Path/Name
     0 $01000 $01fff  4096   512    64    32  image-tile-map
     0 $02000 $0a2ff 33536  2048    16  2096  brdtiles.png
     0 $0a300 $0aeff  3072    32    16   192  seq16.png
-  256 $0b000 $0feff 20224  2048    16  1264  abctiles.png
+    0 $0af00 $0af19    26     1    13    13  monochrome.png
+  230 $0b000 $0feff 20224  2048    16  1264  abctiles.png
     0 $0ff00 $1beff 49152    32    64   768  seq64.png
       $0ff00 $0ffff   256                    SEQ64P0.BIN
       $10000 $1beff 48896                    SEQ64P1.BIN
     0 $1bf00 $1eeff 12288    32    32   384  seq32.png
     0 $1ef00 $1f1ff   768    32     8    96  seq08.png
 
-NOTE: one output image crosses the VRAM page boundary, so there are now
-      two extra output files, for loading the data in two sections.
+NOTE: one output image crosses the VRAM page boundary, so there are now two
+      extra output files, for loading the data in two sections, if needed.
+```
+
+In the above example, there is one file that is processed with 1 bit-per-pixel color.
+The PNG file contains pixels that are either white or transparent (there is no black).
+Also, the file is designated to use palette offset 15, meaning the last portion of
+the palette. The resulting palette contains the following lines in it. This implies
+that any '0' bits in the MONOCHROME.PNG file will show as transparent, and any '1'
+bits in that file will show as white (color index #1 is RGB(15,15,15)), in the palette.
+
+```
+    ...
+    .byte    $00,$00  ; 239 $ef:  0 0 0 (FREE)
+    .byte    $00,$00  ; 240 $f0:  0 0 0 (FREE)
+    .byte    $ff,$0f  ; 241 $f1:  f f f
+    .byte    $00,$00  ; 242 $f2:  0 0 0 (FREE)
+    ...
 ```
 
 There are also other example conversions of the 'painting' file, as shell scripts, in sub-directories off of the "samples" directory. If you run a script,
