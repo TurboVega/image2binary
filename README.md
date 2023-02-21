@@ -9,6 +9,7 @@ V1.2 - include 2 zero bytes in front of binary image data<br>
 V1.3 - support creating VRAM memory map<br>
 V1.4 - output 2 extra files when image crosses VRAM page boundary<br>
 V1.5 - support 1, 2, 4, and 8 bits per pixel in output, plus specifying palette offsets<br>
+V1.6 - fix issue in VRAM map when using '-n' option<br>
 
 This program converts PNG file data into binary data for use on the
 Commander X16. It reads multiple PNG files, combines their needed
