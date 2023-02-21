@@ -110,7 +110,7 @@ impl Expectations {
 }
 
 fn main() {
-    println!("Image to Binary (PNG-to-VERA file convertor) V1.5");
+    println!("Image to Binary (PNG-to-VERA file convertor) V1.6");
 
     // Determine which directories to use.
     let mut directories: Vec<DirParameters> = vec![];
@@ -999,7 +999,13 @@ fn arrange_files_in_memory(files: &mut Vec<FileParameters>) {
         if files.len() == 0 {
             break; // no more files to arrange
         }
+
         let file = files[0].clone();
+
+        if file.no_output {
+            files.remove(0);
+            continue; // skip it
+        }
 
         // Advance the address, if needed, based on alignment.
         let next_address = ((address + file.alignment - 1) / file.alignment) * file.alignment;
